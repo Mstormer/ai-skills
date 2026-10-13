@@ -1,0 +1,66 @@
+{"expect": "deny", "command": "echo PRETOOLUSE_HOOK_CANARY"}
+{"expect": "deny", "command": "rm -rf ~"}
+{"expect": "deny", "command": "rm -fr ~"}
+{"expect": "deny", "command": "rm -r -f ~"}
+{"expect": "deny", "command": "rm -Rf \"$HOME\"/"}
+{"expect": "deny", "command": "sudo rm -rf /"}
+{"expect": "deny", "command": "sudo rm -fr --no-preserve-root /"}
+{"expect": "deny", "command": "sudo rm -fr /*"}
+{"expect": "deny", "command": "/bin/rm -fr ~"}
+{"expect": "deny", "command": "\\rm -fr ~"}
+{"expect": "deny", "command": "rm -fr ${HOME}/*"}
+{"expect": "deny", "command": "rm -fr /home"}
+{"expect": "deny", "command": "rm -fr /home/someone"}
+{"expect": "deny", "command": "rm -fr ~/Documents"}
+{"expect": "deny", "command": "rm -fr ~/.config"}
+{"expect": "deny", "command": "sudo rm -fr /boot"}
+{"expect": "deny", "command": "sudo rm -fr /etc"}
+{"expect": "deny", "command": "sudo rm -fr /usr/"}
+{"expect": "deny", "command": "sudo rm -fr /root"}
+{"expect": "deny", "command": "rm -fr /media/tester/USB"}
+{"expect": "deny", "command": "rm -fr /run/media/tester/USB"}
+{"expect": "deny", "command": "rm -fr /mnt/c"}
+{"expect": "deny", "command": "cd ~ && rm -rf *"}
+{"expect": "deny", "command": "cd && rm -rf ."}
+{"expect": "deny", "command": "rm -rf ../.."}
+{"expect": "deny", "command": "find ~ -delete"}
+{"expect": "deny", "command": "sudo find / -exec rm -rf {} +"}
+{"expect": "deny", "command": "bash -c 'rm -rf ~'"}
+{"expect": "deny", "command": "sh -ec \"rm -fr ~\""}
+{"expect": "deny", "command": "eval \"rm -rf ~\""}
+{"expect": "deny", "command": "env FOO=1 rm -fr ~"}
+{"expect": "deny", "command": "ionice -c 3 rm -fr ~"}
+{"expect": "deny", "command": "nohup rm -fr ~/Documents"}
+{"expect": "deny", "command": "timeout 5 rm -fr ~"}
+{"expect": "deny", "command": "echo \"$(rm -fr ~)\""}
+{"expect": "deny", "command": "ls\nrm -fr ~"}
+{"expect": "deny", "command": "sudo mkfs.ext4 /dev/sdb1"}
+{"expect": "deny", "command": "sudo mke2fs /dev/sdb1"}
+{"expect": "deny", "command": "sudo mkswap /dev/sda2"}
+{"expect": "deny", "command": "sudo wipefs -a /dev/sdb"}
+{"expect": "deny", "command": "sudo shred -n 1 /dev/nvme0n1"}
+{"expect": "deny", "command": "sudo blkdiscard /dev/nvme0n1"}
+{"expect": "deny", "command": "sudo sgdisk --zap-all /dev/sda"}
+{"expect": "deny", "command": "sudo parted /dev/sda mklabel gpt"}
+{"expect": "deny", "command": "printf 'o\\nw\\n' | sudo fdisk /dev/sda"}
+{"expect": "deny", "command": "sudo sfdisk /dev/sda < layout.txt"}
+{"expect": "deny", "command": "sudo dd if=/dev/zero of=/dev/sda bs=1M"}
+{"expect": "allow", "command": "ls -la"}
+{"expect": "allow", "command": "rm -rf ./build"}
+{"expect": "allow", "command": "rm -rf node_modules dist"}
+{"expect": "allow", "command": "rm ~/Documents/notes.txt"}
+{"expect": "allow", "command": "rm -r ~/.cache/pip"}
+{"expect": "allow", "command": "git rm -r --cached foo"}
+{"expect": "allow", "command": "echo \"rm -rf ~\""}
+{"expect": "allow", "command": "find . -name '*.pyc' -delete"}
+{"expect": "allow", "command": "gio trash ~/Documents/old"}
+{"expect": "allow", "command": "sudo fdisk -l"}
+{"expect": "allow", "command": "sudo sfdisk --dump /dev/sda"}
+{"expect": "allow", "command": "sudo parted -l"}
+{"expect": "allow", "command": "sudo parted /dev/sda print"}
+{"expect": "allow", "command": "sudo sgdisk -p /dev/sda"}
+{"expect": "allow", "command": "wipefs -n /dev/sda"}
+{"expect": "allow", "command": "lsblk"}
+{"expect": "allow", "command": "shred -u secret.txt"}
+{"expect": "allow", "command": "dd if=disk.img of=out.img"}
+{"expect": "allow", "command": "cd ~ && ls"}

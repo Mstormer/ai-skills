@@ -1,0 +1,50 @@
+{"expect": "deny", "command": "rm -rf ~"}
+{"expect": "deny", "command": "rm -fr ~"}
+{"expect": "deny", "command": "rm -r -f ~"}
+{"expect": "deny", "command": "rm -Rf ~/"}
+{"expect": "deny", "command": "sudo rm -rf /"}
+{"expect": "deny", "command": "sudo -u root rm -rf /*"}
+{"expect": "deny", "command": "/bin/rm -rf ~"}
+{"expect": "deny", "command": "\\rm -rf ~"}
+{"expect": "deny", "command": "rm -rf \"$HOME\""}
+{"expect": "deny", "command": "rm -rf ${HOME}/"}
+{"expect": "deny", "command": "rm -rf ~/*"}
+{"expect": "deny", "command": "rm -fr ~/Documents"}
+{"expect": "deny", "command": "cd ~ && rm -rf *"}
+{"expect": "deny", "command": "cd && rm -rf ."}
+{"expect": "deny", "command": "rm -rf ../.."}
+{"expect": "deny", "command": "rm -fr ~/Desktop"}
+{"expect": "deny", "command": "rm -fr /Users/someone"}
+{"expect": "deny", "command": "rm -fr /Volumes/Backup"}
+{"expect": "deny", "command": "sudo rm -rf -- /Applications"}
+{"expect": "deny", "command": "find ~ -delete"}
+{"expect": "deny", "command": "sudo find / -exec rm -rf {} +"}
+{"expect": "deny", "command": "bash -c 'rm -rf ~'"}
+{"expect": "deny", "command": "zsh -lc \"rm -fr ~\""}
+{"expect": "deny", "command": "eval \"rm -rf ~\""}
+{"expect": "deny", "command": "env FOO=1 rm -rf ~"}
+{"expect": "deny", "command": "FOO=1 nohup rm -rf ~/Documents"}
+{"expect": "deny", "command": "timeout 5 rm -rf ~"}
+{"expect": "deny", "command": "time caffeinate rm -rf ~"}
+{"expect": "deny", "command": "echo \"$(rm -fr ~)\""}
+{"expect": "deny", "command": "echo \"`rm -fr ~`\""}
+{"expect": "deny", "command": "ls\nrm -fr ~"}
+{"expect": "deny", "command": "sudo diskutil eraseDisk APFS X disk4"}
+{"expect": "deny", "command": "diskutil apfs deleteContainer disk3"}
+{"expect": "deny", "command": "sudo mkfs.ext4 /dev/sdb"}
+{"expect": "deny", "command": "newfs_apfs /dev/disk4"}
+{"expect": "deny", "command": "dd if=/dev/zero of=/dev/disk2"}
+{"expect": "allow", "command": "ls -la"}
+{"expect": "allow", "command": "rm -rf ./build"}
+{"expect": "allow", "command": "rm -rf node_modules dist"}
+{"expect": "allow", "command": "rm ~/Documents/Project/notes.txt"}
+{"expect": "allow", "command": "rm -f ~/Downloads/*.dmg"}
+{"expect": "allow", "command": "git rm -r --cached foo"}
+{"expect": "allow", "command": "echo \"rm -rf ~\""}
+{"expect": "allow", "command": "grep -rn \"rm -rf\" ."}
+{"expect": "allow", "command": "find . -name '*.pyc' -delete"}
+{"expect": "allow", "command": "trash ~/Documents/old"}
+{"expect": "allow", "command": "diskutil list"}
+{"expect": "allow", "command": "cd ~ && ls"}
+{"expect": "allow", "command": "dd if=disk.img of=out.img"}
+{"expect": "deny", "command": "echo PRETOOLUSE_HOOK_CANARY"}
