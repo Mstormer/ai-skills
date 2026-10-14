@@ -2,7 +2,7 @@
 
 `Destruction_blocker.py` is a PreToolUse hook for AI coding agents (Claude Code, Codex and others). It checks every shell command, and the agent's own file edits, **before they run**, and blocks the ones that would destroy a disk, the operating system, your home or personal folders, backups or the Trash. Everyday work, including deleting specific files and project folders, keeps working. It only reads the command text and never runs anything.
 
-Install: follow [INSTALL.md](INSTALL.md), or ask your agent to. Pick the version for the system the agent's commands run on.
+Install: follow [INSTALL.md](INSTALL.md), or ask your agent to. Pick the version for the system the agent's commands run on. To update or remove it, see [Uninstall](INSTALL.md#uninstall-by-the-user-by-hand); because the hook guards itself, that is done by you, by hand, outside the agent.
 
 ## macOS — `macos/Destruction_blocker.py`
 

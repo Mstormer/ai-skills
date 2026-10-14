@@ -211,6 +211,47 @@ echo PRETOOLUSE_HOOK_CANARY
   - **Trust:** Claude Code holds back hooks in an interactive session until the folder's workspace trust dialog is accepted. Codex needs the hook trusted in `/hooks`, and hooks must not be turned off (`[features] hooks = false` in `~/.codex/config.toml`).
   - **JSON:** the settings file is valid.
 
+## Uninstall (by the user, by hand)
+
+The tamper guard blocks agents from removing the hook, so uninstalling is done by the user in their own terminal or text editor, **outside the agent**. An agent asked to uninstall it should show the user these steps instead of trying them. Do the steps in this order: if the files are removed while the hook is still registered, the agent tries to run a missing script on every command (with `"onFailure": "block"`, every command is then blocked).
+
+**1. Unregister the hook.** Open the settings file in a text editor and delete only the `PreToolUse` entry whose `command` runs `Destruction_blocker.py`, keeping any other hooks. If that leaves `"PreToolUse": []` or `"hooks": {}`, those can go too.
+
+| Agent | macOS / Linux | Windows |
+|---|---|---|
+| Claude Code | `~/.claude/settings.json` (and any project `.claude/settings.json` you added it to) | `%USERPROFILE%\.claude\settings.json` |
+| Codex | `~/.codex/hooks.json` | `%USERPROFILE%\.codex\hooks.json` |
+
+Check that the file is still valid JSON:
+
+```bash
+python3 -m json.tool ~/.claude/settings.json
+```
+
+For Codex, the trust record left under `[hooks.state]` in `~/.codex/config.toml` is harmless; delete it by hand if you want.
+
+**2. Close and restart the agent** so it stops loading the hook.
+
+**3. Move the hook's folder to the Trash / Recycle Bin.**
+
+- **macOS:**
+  ```bash
+  trash ~/.claude/hooks/destruction-blocker
+  ```
+  (Codex: `~/.codex/hooks/destruction-blocker`. Without the `trash` command: `mv ~/.claude/hooks/destruction-blocker ~/.Trash/`.)
+- **Linux:**
+  ```bash
+  gio trash ~/.claude/hooks/destruction-blocker
+  ```
+- **Windows (PowerShell):**
+  ```powershell
+  Add-Type -AssemblyName Microsoft.VisualBasic; [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory("$env:USERPROFILE\.claude\hooks\destruction-blocker", 'OnlyErrorDialogs', 'SendToRecycleBin')
+  ```
+
+**4. Check it is gone:** in a new agent session, `echo PRETOOLUSE_HOOK_CANARY` now prints the text instead of being blocked.
+
+To **update** instead of uninstall: the user replaces `Destruction_blocker.py` in the `destruction-blocker` folder by hand with the new version (moving the old one to the Trash), then restarts the agent; the registration stays as it is.
+
 ## Use with a sandbox
 
 The hook reads command text; it cannot see what a script or program does once it runs. For a real boundary, also turn on the agent's sandbox, which the operating system enforces:
