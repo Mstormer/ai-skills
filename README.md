@@ -6,7 +6,7 @@ A collection of hooks, skills and small tools for AI coding agents such as Claud
 
 | Tool | What it does | Platforms |
 |---|---|---|
-| [PreToolUse Safety Hooks](PreToolUse%20Safety%20Hooks/) | Blocks shell commands that would wipe a disk, the operating system or an important folder, before the agent runs them. | macOS, Linux, Windows |
+| [PreToolUse Safety Hooks](PreToolUse%20Safety%20Hooks/) | Blocks agent commands that would wipe a disk, the operating system, personal folders, backups or the Trash, before they run, and protects itself from being changed by the agent. | macOS, Linux, Windows |
 
 ## Installing a tool
 

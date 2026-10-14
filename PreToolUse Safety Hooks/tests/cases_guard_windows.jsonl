@@ -1,0 +1,14 @@
+{"expect": "deny", "note": "guard win: Remove-Item settings", "command": "Remove-Item $env:USERPROFILE\\.claude\\settings.json"}
+{"expect": "deny", "note": "guard win: Move-Item settings", "command": "Move-Item ~\\.claude\\settings.json C:\\Temp\\s.json"}
+{"expect": "deny", "note": "guard win: Set-Content settings", "command": "Set-Content C:\\Users\\tester\\.claude\\settings.json '{}'"}
+{"expect": "deny", "note": "guard win: Copy-Item over settings", "command": "Copy-Item C:\\Temp\\x.json $HOME\\.claude\\settings.json -Force"}
+{"expect": "deny", "note": "guard win: Rename-Item codex hooks", "command": "Rename-Item ~\\.codex\\hooks.json hooks.old"}
+{"expect": "deny", "note": "guard win: cmd move", "command": "cmd /c move %USERPROFILE%\\.claude\\settings.json C:\\Temp"}
+{"expect": "deny", "note": "guard win: git bash mv", "command": "mv /c/Users/tester/.claude/settings.json /tmp/s"}
+{"expect": "deny", "note": "guard win: disableAllHooks", "command": "Set-Content .claude\\settings.local.json '{\"disableAllHooks\": true}'"}
+{"expect": "allow", "note": "guard win: read settings", "command": "Get-Content ~\\.claude\\settings.json"}
+{"expect": "allow", "note": "guard win: type settings", "command": "type %USERPROFILE%\\.claude\\settings.json"}
+{"expect": "allow", "note": "guard win: list .claude", "command": "Get-ChildItem $env:USERPROFILE\\.claude"}
+{"expect": "allow", "note": "guard win: project cleanup", "command": "Remove-Item .\\build -Recurse -Force"}
+{"expect": "deny", "note": "guard win tool: Edit adds disableAllHooks", "raw": "{\"tool_name\": \"Edit\", \"cwd\": \"C:\\\\Users\\\\tester\\\\Documents\\\\Project\", \"tool_input\": {\"file_path\": \"C:\\\\Users\\\\tester\\\\.claude\\\\settings.json\", \"old_string\": \"{\", \"new_string\": \"{\\\"disableAllHooks\\\": true,\"}}"}
+{"expect": "allow", "note": "guard win tool: Edit project file", "raw": "{\"tool_name\": \"Edit\", \"cwd\": \"C:\\\\Users\\\\tester\\\\Documents\\\\Project\", \"tool_input\": {\"file_path\": \"C:\\\\Users\\\\tester\\\\Documents\\\\Project\\\\a.txt\", \"old_string\": \"a\", \"new_string\": \"b\"}}"}

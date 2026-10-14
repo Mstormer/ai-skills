@@ -48,3 +48,494 @@
 {"expect": "allow", "command": "cd ~ && ls"}
 {"expect": "allow", "command": "dd if=disk.img of=out.img"}
 {"expect": "deny", "command": "echo PRETOOLUSE_HOOK_CANARY"}
+{"expect": "deny", "note": "audit: 2 wrapper long option", "command": "sudo --user root rm -fr ~"}
+{"expect": "deny", "note": "audit: 2 timeout option with value", "command": "timeout --signal KILL 5 rm -fr ~"}
+{"expect": "deny", "note": "audit: 3 escaped find grouping", "command": "find ~ \\( -name '*.txt' -o -name '*.md' \\) -delete"}
+{"expect": "deny", "note": "audit: 4 popd ignored", "command": "cd ~ && pushd /tmp && popd && rm -fr *"}
+{"expect": "deny", "note": "audit: 4 subshell cd leaks", "command": "cd ~ && (cd /tmp) && rm -fr *"}
+{"expect": "deny", "note": "audit: 7 case variant on case-insensitive disk", "command": "rm -fr ~/documents"}
+{"expect": "deny", "note": "audit: 8 brace expansion", "command": "rm -fr ~/{Documents,Desktop}"}
+{"expect": "deny", "note": "audit: 8 named-user tilde", "command": "rm -fr ~tester"}
+{"expect": "deny", "note": "audit: 8 variable holding home", "command": "D=~; rm -fr \"$D\""}
+{"expect": "deny", "note": "audit: extra: unset variable becomes /*", "command": "rm -fr \"$BUILD_DIR\"/*"}
+{"expect": "allow", "note": "audit: FP single-quoted substitution text", "command": "echo '$(rm -fr ~)'"}
+{"expect": "allow", "note": "audit: FP harmless absolute cleanup", "command": "rm -rf /tmp/build-cache"}
+{"expect": "allow", "note": "audit: exit 0: null payload", "raw": "null"}
+{"expect": "deny", "note": "S1 unparseable quoting + risky", "command": "rm -rf ./build 'unterminated", "reason_contains": "Could not verify"}
+{"expect": "allow", "note": "S1 unparseable quoting, not risky", "command": "echo 'unterminated"}
+{"expect": "deny", "note": "S1 recursion depth exceeded + risky", "command": "eval eval eval eval eval eval eval eval eval eval rm -rf ./build", "reason_contains": "Could not verify"}
+{"expect": "allow", "note": "S1 recursion depth exceeded, not risky", "command": "eval eval eval eval eval eval eval eval eval eval echo hi"}
+{"expect": "deny", "note": "S1 deep syntactic nesting + risky", "command": "((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((rm -rf ./build))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))"}
+{"expect": "allow", "note": "S1 deep syntactic nesting, not risky", "command": "((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((echo hi))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))"}
+{"expect": "deny", "note": "S1 brace expansion over the cap + risky", "command": "rm -rf ./x{1..5000}"}
+{"expect": "allow", "note": "S1 brace expansion over the cap, not risky", "command": "echo {1..5000}"}
+{"expect": "deny", "note": "S1 obfuscated risky word still counts (quotes removed)", "command": "r''m -rf ./build 'oops"}
+{"expect": "deny", "note": "S2 operators: semicolon", "command": "echo hi; rm -rf ~"}
+{"expect": "deny", "note": "S2 operators: background &", "command": "sleep 1 & rm -rf ~"}
+{"expect": "deny", "note": "S2 operators: pipe |&", "command": "ls |& rm -rf ~"}
+{"expect": "deny", "note": "S2 operators: || ", "command": "false || rm -rf ~"}
+{"expect": "deny", "note": "S2 group { }", "command": "{ rm -rf ~; }"}
+{"expect": "deny", "note": "S2 subshell ( )", "command": "(rm -rf ~)"}
+{"expect": "deny", "note": "S2 backslash-newline continuation", "command": "rm -rf ~/Doc\\\numents"}
+{"expect": "deny", "note": "S2 continuation between words", "command": "rm -rf \\\n  ~"}
+{"expect": "allow", "note": "S2 quoted tilde is a literal file name", "command": "rm -rf '~'"}
+{"expect": "allow", "note": "S2 escaped tilde is a literal file name", "command": "rm -rf \\~"}
+{"expect": "allow", "note": "S2 double-quoted tilde is literal", "command": "rm -rf \"~\""}
+{"expect": "allow", "note": "S2 escaped parentheses are literal words", "command": "echo \\(rm -rf ~\\)"}
+{"expect": "allow", "note": "S2 comment is not executed", "command": "ls # rm -rf ~"}
+{"expect": "deny", "note": "S2 comment ends at newline", "command": "ls # cleanup\nrm -rf ~"}
+{"expect": "allow", "note": "S2 hash inside a word is not a comment", "command": "echo a#b"}
+{"expect": "deny", "note": "S2 nested $( ) with ) inside quotes", "command": "echo $(echo \")\"; rm -rf ~)"}
+{"expect": "deny", "note": "S2 nested substitutions", "command": "x=$(echo \"$(rm -rf ~)\")"}
+{"expect": "deny", "note": "S2 backticks unquoted", "command": "echo `rm -rf ~`"}
+{"expect": "allow", "note": "S2 single-quoted backticks are literal", "command": "echo '`rm -rf ~`'"}
+{"expect": "deny", "note": "S2 arithmetic containing a substitution", "command": "echo $(( $(rm -rf ~) + 1 ))"}
+{"expect": "allow", "note": "S2 arithmetic is ignored", "command": "echo $((1 + 2)) $(( 3 * (4 + 5) ))"}
+{"expect": "deny", "note": "S2 arithmetic command then rm", "command": "(( 1 > 0 )) && rm -rf ~"}
+{"expect": "allow", "note": "S2 arithmetic command alone", "command": "(( i = 1 + 2 )); echo $i"}
+{"expect": "deny", "note": "S2 nested subshell written as ((", "command": "((cd ~); rm -rf ./x; cd ~ && rm -rf *)"}
+{"expect": "allow", "note": "S2 ANSI-C quoted tilde is literal", "command": "rm -rf $'\\x7e'"}
+{"expect": "deny", "note": "S2 redirection does not hide the operand", "command": "rm -rf ~ 2>/dev/null"}
+{"expect": "deny", "note": "S2 fd redirect before command", "command": "2>/dev/null rm -rf ~"}
+{"expect": "allow", "note": "S2 rm text after echo is data", "command": "echo rm -rf ~ > /dev/null"}
+{"expect": "deny", "note": "S2 if/then/fi", "command": "if true; then rm -rf ~; fi"}
+{"expect": "deny", "note": "S2 while loop body", "command": "while true; do rm -rf ~; done"}
+{"expect": "deny", "note": "S2 case arm", "command": "case $x in a) echo a;; *) rm -rf ~;; esac"}
+{"expect": "deny", "note": "S2 function body run when called", "command": "f() { rm -rf ~; }; f"}
+{"expect": "deny", "note": "S1 shell functions are not analyzed: a risky one falls to S1 (was: function defined but never called)", "command": "f() { rm -rf \"$1\"/*; }; echo defined", "reason_contains": "Could not verify"}
+{"expect": "deny", "note": "S2 function argument reaches rm", "command": "wipe() { rm -rf \"$1\"; }; wipe ~/Documents"}
+{"expect": "deny", "note": "S1 shell functions are not analyzed: a risky one falls to S1 (was: function argument is a project folder)", "command": "wipe() { rm -rf \"$1\"/*; }; wipe ./build", "reason_contains": "Could not verify"}
+{"expect": "deny", "note": "S2 [[ ]] with && inside, then rm", "command": "[[ -d x && -f y ]] || rm -rf ~"}
+{"expect": "deny", "note": "S2 process substitution body", "command": "diff <(rm -rf ~) <(ls)"}
+{"expect": "deny", "note": "S2 trap command string", "command": "trap 'rm -rf ~' EXIT; echo hi"}
+{"expect": "allow", "note": "S2 grep pattern mentioning rm", "command": "grep -rn -e 'rm -rf ~' -e \"diskutil eraseDisk\" ."}
+{"expect": "deny", "note": "S3 empty variable becomes /", "command": "rm -rf \"$OUT/\""}
+{"expect": "deny", "note": "S3 empty variable becomes /*", "command": "rm -rf $BUILD_DIR/*"}
+{"expect": "allow", "note": "S3 unknown variable alone is harmless", "command": "rm -rf \"$X\""}
+{"expect": "allow", "note": "S3 opaque component is not ~/Documents", "command": "rm -rf \"$X\"/Documents"}
+{"expect": "allow", "note": "S3 non-empty unknown is opaque", "command": "rm -rf \"${X:?}\"/*"}
+{"expect": "deny", "note": "S3 empty variable under home", "command": "rm -rf ~/\"$SUBDIR\""}
+{"expect": "deny", "note": "S3 empty variable under Documents", "command": "rm -rf \"$HOME/Documents/$NAME\""}
+{"expect": "allow", "note": "S3 empty variable under a project folder", "command": "rm -rf \"$HOME/Documents/Project/$NAME\""}
+{"expect": "deny", "note": "S3 default value used", "command": "rm -rf \"${TARGET:-$HOME}\""}
+{"expect": "deny", "note": "S3 default tilde value", "command": "rm -rf ${TARGET:-~}"}
+{"expect": "allow", "note": "S3 default value is a project folder", "command": "rm -rf \"${TARGET:-./build}\""}
+{"expect": "deny", "note": "S3 := assigns", "command": ": \"${D:=$HOME}\"; rm -rf \"$D\""}
+{"expect": "deny", "note": "S3 export assignment", "command": "export D=~/Documents && rm -rf \"$D\""}
+{"expect": "deny", "note": "S3 local/declare assignment", "command": "f() { local d=~; rm -rf \"$d\"/*; }; f"}
+{"expect": "deny", "note": "S3 readonly assignment", "command": "readonly T=~/Desktop; rm -rf $T"}
+{"expect": "deny", "note": "S3 suffix removal on a known value", "command": "D=~/; rm -rf \"${D%/}\""}
+{"expect": "allow", "note": "S3 known safe variable", "command": "D=./build; rm -rf \"$D\"/*"}
+{"expect": "deny", "note": "S3 variable from the environment", "command": "rm -rf \"$TARGET\"", "env": {"TARGET": "@HOME@/Documents"}}
+{"expect": "allow", "note": "S3 environment variable pointing at a project subfolder", "command": "rm -rf \"$TARGET\"", "env": {"TARGET": "@HOME@/Documents/Project/build"}}
+{"expect": "deny", "note": "S3 TMPDIR from environment equals home", "command": "rm -rf \"$TMPDIR\"", "env": {"TMPDIR": "@HOME@"}}
+{"expect": "allow", "note": "S3 TMPDIR unknown, subpath only", "command": "rm -rf \"$TMPDIR/foo\""}
+{"expect": "deny", "note": "S3 PWD is the tracked cwd", "command": "cd ~ && rm -rf \"$PWD\"/*"}
+{"expect": "allow", "note": "S3 PWD in a project folder", "command": "rm -rf \"$PWD\"/build"}
+{"expect": "deny", "note": "S3 $(pwd) is the cwd", "command": "rm -rf \"$(pwd)\"", "cwd": "@HOME@"}
+{"expect": "deny", "note": "S3 $(echo ~)", "command": "rm -rf \"$(echo ~)\""}
+{"expect": "deny", "note": "S3 array holding protected folders", "command": "dirs=(~/Documents ~/Desktop); rm -rf \"${dirs[@]}\""}
+{"expect": "deny", "note": "S3 for loop over protected folders", "command": "for d in ~/Desktop ~/Downloads; do rm -rf \"$d\"; done"}
+{"expect": "deny", "note": "S3 for loop over home glob", "command": "for f in ~/*; do rm -rf \"$f\"; done"}
+{"expect": "allow", "note": "S3 for loop over project files", "command": "for f in *.tmp; do rm -f \"$f\"; done"}
+{"expect": "deny", "note": "S3 unset variable is empty", "command": "unset D; rm -rf \"$D\"/*"}
+{"expect": "allow", "note": "S3 command substitution of an unknown command alone", "command": "rm -rf $(mktemp -d)"}
+{"expect": "deny", "note": "S3 command substitution as a path prefix may be empty", "command": "rm -rf \"$(git rev-parse --show-toplevel)\"/*"}
+{"expect": "allow", "note": "S3 command substitution as a prefix of a subfolder", "command": "rm -rf \"$(git rev-parse --show-toplevel)/build\""}
+{"expect": "deny", "note": "S3 unquoted variable is word-split", "command": "T=\"./build /Users\"; rm -rf $T"}
+{"expect": "allow", "note": "S3 tilde inside a variable value is not expanded again", "command": "T=\"./build ~\"; rm -rf $T"}
+{"expect": "deny", "note": "S3 positional parameters in sh -c", "command": "sh -c 'rm -rf \"$1\"' _ ~"}
+{"expect": "deny", "note": "S3 $0 in sh -c", "command": "bash -c 'rm -rf \"$0\"/*' ~"}
+{"expect": "deny", "note": "S3 set -- positional", "command": "set -- ~/Documents; rm -rf \"$1\""}
+{"expect": "deny", "note": "S4 nested braces", "command": "rm -rf ~/{a,b,{Documents,c}}"}
+{"expect": "deny", "note": "S4 brace with prefix and suffix", "command": "rm -rf ~/Doc{u,x}ments"}
+{"expect": "deny", "note": "S4 system folders by braces", "command": "sudo rm -rf /{usr,bin}"}
+{"expect": "deny", "note": "S4 brace yields whole-folder globs", "command": "rm -rf ~/Documents/{*,.*}"}
+{"expect": "allow", "note": "S4 sequence of project folders", "command": "rm -rf ./build{1..3} ~/Documents/Project/{a,b}"}
+{"expect": "allow", "note": "S4 quoted braces are literal", "command": "rm -rf './{Documents,Desktop}'"}
+{"expect": "deny", "note": "S4 ~+ is the cwd", "command": "rm -rf ~+", "cwd": "@HOME@"}
+{"expect": "allow", "note": "S4 ~+ subfolder", "command": "rm -rf ~+/build"}
+{"expect": "deny", "note": "S4 ~- is the previous dir", "command": "cd ~ && cd /tmp && rm -rf ~-"}
+{"expect": "deny", "note": "S4 ~root", "command": "sudo rm -rf ~root"}
+{"expect": "allow", "note": "S4 subfolder of a named user's home in the sandbox", "command": "rm -rf ~tester/Documents/Project/build"}
+{"expect": "deny", "note": "S5 symlink to home", "command": "rm -rf @SANDBOX@/scratch/link-to-home"}
+{"expect": "deny", "note": "S5 contents through a symlink", "command": "rm -rf @SANDBOX@/scratch/link-to-docs/*"}
+{"expect": "allow", "note": "S5 project subfolder through a symlink", "command": "rm -rf @SANDBOX@/scratch/link-to-docs/Project/build"}
+{"expect": "deny", "note": "S5 glob match is a symlink to home", "command": "rm -rf @SANDBOX@/scratch/*"}
+{"expect": "deny", "note": "S5 cd through a symlink then glob", "command": "cd @SANDBOX@/scratch/link-to-docs && rm -rf *"}
+{"expect": "deny", "note": "S5 the sandbox folder that contains home", "command": "rm -rf @SANDBOX@/home"}
+{"expect": "deny", "note": "S5 case variant", "command": "rm -rf ~/DESKTOP"}
+{"expect": "deny", "note": "S5 case variant of a system folder", "command": "rm -rf /USERS"}
+{"expect": "deny", "note": "S5 command name case variant (case-insensitive disk)", "command": "RM -rf ~"}
+{"expect": "deny", "note": "S5 /etc resolves to /private/etc", "command": "sudo rm -rf /etc/"}
+{"expect": "deny", "note": "S5 lexical .. back to /Users", "command": "rm -rf /tmp/../Users"}
+{"expect": "allow", "note": "S5 /private/tmp subfolder", "command": "rm -rf /private/tmp/build-cache /tmp/x/*"}
+{"expect": "deny", "note": "S5 firmlinked data volume path", "command": "sudo rm -rf /System/Volumes/Data/Users"}
+{"expect": "deny", "note": "S5 HOME given as a symlink path", "command": "rm -rf @HOME@/Documents", "env": {"HOME": "@SANDBOX@/scratch/link-to-home"}}
+{"expect": "deny", "note": "S5 HOME with trailing slash", "command": "rm -rf ~/Desktop", "env": {"HOME": "@HOME@/"}}
+{"expect": "allow", "note": "S5 non-canonical HOME, project subfolder", "command": "rm -rf ~/Documents/Project/build", "env": {"HOME": "@SANDBOX@/scratch/link-to-home"}}
+{"expect": "deny", "note": "S6 Trash folder", "command": "rm -rf ~/.Trash"}
+{"expect": "deny", "note": "S6 Trash contents", "command": "rm -rf ~/.Trash/*"}
+{"expect": "deny", "note": "S6 Trash contents with find", "command": "find ~/.Trash -mindepth 1 -delete"}
+{"expect": "allow", "note": "S6 one file in the Trash", "command": "rm -f ~/.Trash/old.txt"}
+{"expect": "deny", "note": "S6 volume trash", "command": "sudo rm -rf /Volumes/Backup/.Trashes"}
+{"expect": "deny", "note": "S6 Time Machine backup folder", "command": "sudo rm -rf /Volumes/TM/Backups.backupdb/Mac"}
+{"expect": "deny", "note": "S6 agent settings file", "command": "rm ~/.claude/settings.json"}
+{"expect": "deny", "note": "S6 codex hooks file", "command": "rm -f ~/.codex/hooks.json"}
+{"expect": "deny", "note": "S6 truncating redirection to settings", "command": ": > ~/.claude/settings.local.json"}
+{"expect": "deny", "note": "S6 overwrite codex config", "command": "echo '' > ~/.codex/config.toml"}
+{"expect": "deny", "note": "S6 tee truncates settings", "command": "echo '{}' | tee ~/.claude/settings.json"}
+{"expect": "deny", "note": "S6 truncate settings", "command": "truncate -s 0 ~/.claude/settings.json"}
+{"expect": "deny", "note": "S6 glob over settings files", "command": "rm ~/.claude/*.json"}
+{"expect": "deny", "note": "tamper guard: appending to the agent settings changes them (was allowed under S6)", "command": "echo '' >> ~/.claude/settings.json; tee -a ~/.claude/settings.json < /dev/null"}
+{"expect": "allow", "note": "S6 reading settings", "command": "cat ~/.claude/settings.json > /tmp/settings-backup.json"}
+{"expect": "allow", "note": "S6 a backup copy next to settings", "command": "rm ~/.claude/settings.json.bak"}
+{"expect": "deny", "note": "S6 protected folder itself via .", "command": "rm -rf ~/Documents/."}
+{"expect": "deny", "note": "S6 hidden contents", "command": "rm -rf ~/Documents/.*"}
+{"expect": "deny", "note": "S6 .ssh", "command": "rm -rf ~/.ssh/*"}
+{"expect": "allow", "note": "S6 subfolder inside Library", "command": "rm -rf ~/Library/Caches/com.example.app ~/Library/Developer/Xcode/DerivedData/*"}
+{"expect": "deny", "note": "S6 iCloud Drive folder", "command": "rm -rf ~/Library/Mobile\\ Documents"}
+{"expect": "deny", "note": "S7 sudo -D sets the cwd", "command": "sudo -D ~ rm -rf *"}
+{"expect": "allow", "note": "S7 sudo --chdir to a scratch folder", "command": "sudo --chdir=/tmp/scratch-xyz rm -rf ./*"}
+{"expect": "deny", "note": "S7 sudo option cluster and --", "command": "sudo -nE -u root -- rm -rf ~"}
+{"expect": "deny", "note": "S7 sudo VAR=value before command", "command": "sudo FOO=1 rm -rf ~"}
+{"expect": "deny", "note": "S7 doas", "command": "doas -u root rm -rf /"}
+{"expect": "deny", "note": "S7 env -C", "command": "env -C ~ rm -rf *"}
+{"expect": "allow", "note": "S7 env -C is for that command only", "command": "env -C ~ ls; rm -rf *"}
+{"expect": "deny", "note": "S7 env -S split string", "command": "env -S 'rm -rf' ~"}
+{"expect": "deny", "note": "S7 env -i child shell has no HOME", "command": "env -i bash -c 'rm -rf \"$HOME\"/*'"}
+{"expect": "deny", "note": "S7 env -u then rm", "command": "env -u FOO --unset=BAR rm -rf ~"}
+{"expect": "deny", "note": "S7 timeout -k", "command": "timeout -k 5 10 rm -rf ~"}
+{"expect": "deny", "note": "S7 timeout long options", "command": "timeout --kill-after=5 --foreground 10 rm -rf ~"}
+{"expect": "deny", "note": "S7 nice -n", "command": "nice -n 10 rm -rf ~"}
+{"expect": "deny", "note": "S7 nice -N", "command": "nice -10 rm -rf ~"}
+{"expect": "deny", "note": "S7 ionice", "command": "ionice -c 3 rm -rf ~"}
+{"expect": "deny", "note": "S7 stdbuf", "command": "stdbuf -oL --error=0 rm -rf ~"}
+{"expect": "deny", "note": "S7 nohup in background", "command": "nohup rm -rf ~ &"}
+{"expect": "deny", "note": "S7 time -p", "command": "time -p rm -rf ~"}
+{"expect": "deny", "note": "S7 command and builtin", "command": "command -p rm -rf ~"}
+{"expect": "deny", "note": "S7 builtin cd changes the cwd", "command": "builtin cd ~ && rm -rf *"}
+{"expect": "allow", "note": "S7 command -v only prints", "command": "command -v rm"}
+{"expect": "deny", "note": "S7 exec", "command": "exec rm -rf ~"}
+{"expect": "deny", "note": "S7 caffeinate with options", "command": "caffeinate -i -t 60 rm -rf ~"}
+{"expect": "deny", "note": "S7 chrt", "command": "chrt -f 99 rm -rf ~"}
+{"expect": "deny", "note": "S7 taskset", "command": "taskset -c 0 rm -rf ~"}
+{"expect": "deny", "note": "S7 flock command", "command": "flock -w 5 /tmp/lock rm -rf ~"}
+{"expect": "deny", "note": "S7 flock -c", "command": "flock /tmp/lock -c 'rm -rf ~'"}
+{"expect": "deny", "note": "S7 watch", "command": "watch -n 5 rm -rf ~"}
+{"expect": "deny", "note": "S7 script (BSD form)", "command": "script -q /dev/null rm -rf ~"}
+{"expect": "deny", "note": "S7 script -c (Linux form)", "command": "script -q -c 'rm -rf ~' /dev/null"}
+{"expect": "deny", "note": "S7 systemd-run", "command": "systemd-run --user --scope rm -rf ~"}
+{"expect": "deny", "note": "S7 arch", "command": "arch -arm64 rm -rf ~"}
+{"expect": "deny", "note": "S7 su -c", "command": "su root -c 'rm -rf ~'"}
+{"expect": "deny", "note": "S7 sudo -s", "command": "sudo -s rm -rf ~"}
+{"expect": "deny", "note": "S7 GNU grm", "command": "grm -rf ~"}
+{"expect": "deny", "note": "S7 GNU gfind", "command": "gfind ~ -delete"}
+{"expect": "deny", "note": "S7 GNU gtimeout", "command": "gtimeout 5 rm -rf ~"}
+{"expect": "deny", "note": "S7 GNU gxargs", "command": "echo ~ | gxargs rm -rf"}
+{"expect": "deny", "note": "S7 GNU gdd", "command": "gdd if=/dev/zero of=/dev/disk2"}
+{"expect": "deny", "note": "S7 unknown wrapper option read both ways", "command": "sudo --weird-option value rm -rf ~"}
+{"expect": "deny", "note": "S7 unknown short option read both ways", "command": "sudo -Z rm -rf ~"}
+{"expect": "deny", "note": "S7 safety net: risky word among wrapper arguments", "command": "timeout --bogus rm -rf ~"}
+{"expect": "deny", "note": "S7 bash -lc", "command": "bash -lc 'rm -rf ~'"}
+{"expect": "deny", "note": "S7 bash -o pipefail -c", "command": "bash -o pipefail -c 'rm -rf ~'"}
+{"expect": "deny", "note": "S7 bash -e -x -c", "command": "bash -e -x -c 'rm -rf ~'"}
+{"expect": "deny", "note": "S7 sh -ec", "command": "sh -ec 'cd ~ && rm -rf *'"}
+{"expect": "deny", "note": "S7 fish -c", "command": "fish -c 'rm -rf ~'"}
+{"expect": "deny", "note": "S7 dash and ksh", "command": "dash -c 'echo hi' && ksh -c 'rm -rf ~'"}
+{"expect": "allow", "note": "S7 bash script file cannot be seen", "command": "bash ./scripts/clean.sh"}
+{"expect": "allow", "note": "S7 bash -c harmless", "command": "bash -c 'rm -rf ./build && echo done'"}
+{"expect": "allow", "note": "S7 sudo harmless", "command": "sudo -u root ls ~ && env FOO=1 timeout 5 rm -rf ./build"}
+{"expect": "deny", "note": "S7 eval with joined args", "command": "eval rm -rf '~'"}
+{"expect": "deny", "note": "S8 cd ; then glob (cd may fail or succeed)", "command": "cd ~ ; rm -rf *"}
+{"expect": "deny", "note": "S8 cd that might fail keeps the old cwd", "command": "cd /tmp/scratch-xyz; rm -rf *", "cwd": "@HOME@"}
+{"expect": "allow", "note": "S8 cd || exit guards the old cwd", "command": "cd /tmp/scratch-xyz || exit 1; rm -rf *", "cwd": "@HOME@"}
+{"expect": "allow", "note": "S8 set -e guards a failing cd", "command": "set -euo pipefail; cd /tmp/scratch-xyz; rm -rf *", "cwd": "@HOME@"}
+{"expect": "allow", "note": "S8 cd && then glob", "command": "cd /tmp/scratch-xyz && rm -rf *", "cwd": "@HOME@"}
+{"expect": "deny", "note": "S8 subshell cd then glob inside", "command": "(cd ~ && rm -rf *)"}
+{"expect": "allow", "note": "S8 background cd has no effect", "command": "cd ~ & rm -rf *"}
+{"expect": "deny", "note": "S8 cd .. from the project reaches Documents", "command": "cd .. && rm -rf *"}
+{"expect": "deny", "note": "S8 parent glob", "command": "rm -rf ../*"}
+{"expect": "allow", "note": "S8 sibling project", "command": "rm -rf ../other-project"}
+{"expect": "deny", "note": "S8 cd with no args goes home", "command": "cd && rm -rf ./*"}
+{"expect": "deny", "note": "S8 unknown cwd then whole glob", "command": "cd \"$X\" && rm -rf *"}
+{"expect": "allow", "note": "S8 unknown cwd, plain subfolder", "command": "cd \"$X\" && rm -rf build ./dist/*"}
+{"expect": "deny", "note": "S8 unknown cwd, protected folder name", "command": "cd \"$X\" && rm -rf Documents"}
+{"expect": "deny", "note": "S8 unknown cwd, dot-dot", "command": "cd \"$X\" && rm -rf .."}
+{"expect": "deny", "note": "S8 cd - with untracked previous dir", "command": "cd - && rm -rf *"}
+{"expect": "deny", "note": "S8 pushd", "command": "pushd ~ && rm -rf *"}
+{"expect": "deny", "note": "S8 pushd/popd stack", "command": "pushd ~ && pushd /tmp && popd && rm -rf *"}
+{"expect": "allow", "note": "S8 popd returns to the project", "command": "pushd /tmp/scratch-xyz && popd && rm -rf *"}
+{"expect": "allow", "note": "S8 git -C is for that command only", "command": "git -C ~ status && rm -rf *"}
+{"expect": "deny", "note": "S8 CDPATH", "command": "cd Documents && rm -rf *", "env": {"CDPATH": "@HOME@"}}
+{"expect": "deny", "note": "S8 pipeline last stage cd (zsh keeps it)", "command": "echo x | cd ~; rm -rf *"}
+{"expect": "deny", "note": "S8 eval cd affects the shell", "command": "eval cd ~; rm -rf *"}
+{"expect": "allow", "note": "S8 command substitution scope", "command": "x=$(cd ~; pwd); rm -rf ./*"}
+{"expect": "deny", "note": "S8 relative path from HOME cwd", "command": "rm -rf Documents", "cwd": "@HOME@"}
+{"expect": "deny", "note": "S9 rm options after operands", "command": "rm ~ -rf"}
+{"expect": "deny", "note": "S9 rm -- then operand", "command": "rm -rf -- ~/Documents"}
+{"expect": "allow", "note": "S9 rm file named -rf after --", "command": "rm -- -rf ./build"}
+{"expect": "deny", "note": "S9 find -exec rm on home", "command": "find ~ -type f -exec rm -f {} \\;"}
+{"expect": "deny", "note": "S9 find -execdir", "command": "find ~ -name '*.log' -execdir rm {} +"}
+{"expect": "deny", "note": "S9 find -ok", "command": "find ~/Documents -ok rm {} ';'"}
+{"expect": "deny", "note": "S9 find -exec sh -c rm", "command": "find ~ -type d -exec sh -c 'rm -rf \"$1\"' _ {} \\;"}
+{"expect": "deny", "note": "S9 find -exec shred", "command": "gfind ~ -type f -exec gshred -u {} +"}
+{"expect": "deny", "note": "S9 find with ! and -L", "command": "find -L ~ ! -name keep -delete"}
+{"expect": "deny", "note": "S9 find -exec with an explicit protected operand", "command": "find . -name x -exec rm -rf ~ \\;"}
+{"expect": "deny", "note": "S9 BSD find -f start", "command": "find -f ~ -- -delete"}
+{"expect": "allow", "note": "S9 find in the project", "command": "find . -type d -name __pycache__ -exec rm -rf {} +"}
+{"expect": "allow", "note": "S9 find without deletion", "command": "find ~ -name '*.log' -print -exec ls -l {} \\;"}
+{"expect": "allow", "note": "S9 find in a project subfolder with -delete", "command": "find ~/Documents/Project/build -name '*.o' -delete"}
+{"expect": "deny", "note": "S9 rsync --delete into home", "command": "rsync -a --delete empty/ ~/"}
+{"expect": "deny", "note": "S9 rsync --delete-after into Documents", "command": "rsync -av --delete-after ./site/ ~/Documents"}
+{"expect": "deny", "note": "S9 rsync --del", "command": "rsync -r --del ./x/ /Users/someone/"}
+{"expect": "deny", "note": "S9 rsync --remove-source-files from a protected folder", "command": "rsync -a --remove-source-files ~/Documents/ /Volumes/Backup/docs/"}
+{"expect": "allow", "note": "S9 rsync --delete into a project folder", "command": "rsync -av --delete ./src/ ~/Documents/Project/backup/"}
+{"expect": "allow", "note": "S9 rsync dry run", "command": "rsync -an --delete empty/ ~/ && rsync --dry-run --delete empty/ ~/"}
+{"expect": "allow", "note": "S9 rsync to a remote host", "command": "rsync -a --delete ./site/ user@host:/home/user/"}
+{"expect": "allow", "note": "S9 rsync --delay-updates is not --delete", "command": "rsync -a --delay-updates ./site/ ~/Documents/Project/out/"}
+{"expect": "deny", "note": "S9 git clean in home", "command": "git clean -fdx", "cwd": "@HOME@"}
+{"expect": "deny", "note": "S9 git -C home clean", "command": "git -C ~ clean -ffdx"}
+{"expect": "deny", "note": "S9 git clean in Documents", "command": "git clean -f -d", "cwd": "@HOME@/Documents"}
+{"expect": "allow", "note": "S9 git clean in a project", "command": "git clean -fdx"}
+{"expect": "allow", "note": "S9 git clean dry run", "command": "git clean -n -fdx", "cwd": "@HOME@"}
+{"expect": "allow", "note": "S9 git clean -f only removes untracked files", "command": "git clean -f", "cwd": "@HOME@"}
+{"expect": "deny", "note": "S9 xargs after find on home", "command": "find ~ -name '*.tmp' | xargs rm -f"}
+{"expect": "deny", "note": "S9 xargs after ls home", "command": "ls ~ | xargs rm -rf"}
+{"expect": "deny", "note": "S9 xargs after echo glob", "command": "echo ~/* | xargs rm -rf"}
+{"expect": "deny", "note": "S9 xargs after printf", "command": "printf '%s\\n' ~/Documents | xargs rm -rf"}
+{"expect": "deny", "note": "S9 xargs -0 -I", "command": "find ~ -print0 | xargs -0 -I{} rm -rf {}"}
+{"expect": "deny", "note": "S9 xargs after a filter", "command": "find ~ -type f | grep -v keep | xargs rm"}
+{"expect": "deny", "note": "S9 xargs here-string", "command": "xargs rm -rf <<< ~"}
+{"expect": "deny", "note": "S9 git ls-files in home", "command": "git ls-files -z | xargs -0 rm", "cwd": "@HOME@"}
+{"expect": "deny", "note": "S9 xargs sh -c with $@", "command": "find ~ -maxdepth 1 | xargs sh -c 'rm -rf \"$@\"' _"}
+{"expect": "deny", "note": "S9 while read loop fed by find", "command": "find ~ -name '*.bak' | while read -r f; do rm -f \"$f\"; done"}
+{"expect": "deny", "note": "S9 rm of a command substitution listing home", "command": "rm -rf $(find ~ -maxdepth 1 -name '*.tmp')"}
+{"expect": "deny", "note": "S9 parallel ::: args", "command": "parallel rm -rf ::: ~/Documents ~/Desktop"}
+{"expect": "allow", "note": "S9 xargs after find in the project", "command": "find . -name '*.o' | xargs rm -f"}
+{"expect": "allow", "note": "S9 xargs with an unknowable producer (limitation)", "command": "cat list.txt | xargs rm -f"}
+{"expect": "allow", "note": "S9 xargs with a non-deleting command", "command": "find ~ -name '*.log' | xargs -n1 echo"}
+{"expect": "allow", "note": "S9 git ls-files in a project", "command": "git ls-files -z '*.orig' | xargs -0 rm -f"}
+{"expect": "deny", "note": "S9 redirect to a disk device", "command": "cat disk.img > /dev/disk2"}
+{"expect": "deny", "note": "S9 dd to a raw disk", "command": "sudo dd if=disk.img of=/dev/rdisk2 bs=1m"}
+{"expect": "deny", "note": "S9 tee to a disk", "command": "cat img | sudo tee /dev/rdisk3 > /dev/null"}
+{"expect": "deny", "note": "S9 cp to a disk", "command": "sudo cp disk.img /dev/disk4"}
+{"expect": "deny", "note": "S9 ddrescue to a disk", "command": "ddrescue -f /dev/disk1 /dev/disk2 map.log"}
+{"expect": "deny", "note": "S9 pv -o to a disk", "command": "pv disk.img -o /dev/disk2"}
+{"expect": "deny", "note": "S9 &> to a disk", "command": "make &> /dev/disk3s1"}
+{"expect": "allow", "note": "S9 dd to /dev/null", "command": "dd if=/dev/zero of=/dev/null bs=1m count=10"}
+{"expect": "allow", "note": "S9 reading a disk", "command": "sudo dd if=/dev/rdisk2 of=disk.img bs=1m"}
+{"expect": "allow", "note": "S9 safe devices", "command": "echo hi > /dev/null; ls 2>/dev/stderr; echo x > /dev/tty; cat /dev/urandom | head -c 10 > /dev/stdout; exec 3>/dev/fd/1"}
+{"expect": "allow", "note": "S9 ddrescue to an image file", "command": "ddrescue /dev/disk1 out.img map.log"}
+{"expect": "deny", "note": "S10 diskutil eraseVolume", "command": "diskutil eraseVolume APFS Untitled disk3s1", "reason_contains": "diskutil"}
+{"expect": "deny", "note": "S10 diskutil verb case-insensitive", "command": "diskutil ERASEDISK JHFS+ X disk4"}
+{"expect": "deny", "note": "S10 diskutil ap deleteVolume", "command": "sudo diskutil ap deleteVolume disk3s2"}
+{"expect": "deny", "note": "S10 diskutil apfs eraseVolume", "command": "diskutil apfs eraseVolume disk3s1 -name X"}
+{"expect": "deny", "note": "S10 diskutil appleRAID delete", "command": "diskutil appleRAID delete MyRAID"}
+{"expect": "deny", "note": "S10 diskutil cs deleteLVG", "command": "diskutil cs deleteLVG 1234-ABCD"}
+{"expect": "deny", "note": "S10 diskutil zeroDisk / secureErase / resizeVolume", "command": "diskutil zeroDisk disk2 || diskutil secureErase 0 disk2 || diskutil resizeVolume disk0s2 100G"}
+{"expect": "deny", "note": "S10 diskutil deleteSnapshot", "command": "diskutil apfs deleteSnapshot disk1s1 -name snap"}
+{"expect": "allow", "note": "S10 diskutil read-only verbs", "command": "diskutil list && diskutil info disk0 && diskutil apfs list && diskutil unmountDisk disk9"}
+{"expect": "deny", "note": "S10 newfs_*", "command": "sudo newfs_hfs -v Data /dev/disk2s1"}
+{"expect": "deny", "note": "S10 mkfs*", "command": "mkfs.exfat /dev/disk5s1"}
+{"expect": "deny", "note": "S10 fdisk -e", "command": "sudo fdisk -e /dev/disk0"}
+{"expect": "deny", "note": "S10 fdisk -i -a", "command": "sudo fdisk -i -a hfs /dev/disk2"}
+{"expect": "allow", "note": "S10 plain fdisk only prints", "command": "sudo fdisk /dev/disk0 && fdisk -d /dev/disk0"}
+{"expect": "deny", "note": "S10 gpt destroy", "command": "sudo gpt destroy disk2"}
+{"expect": "deny", "note": "S10 gpt add", "command": "gpt add -t hfs disk2"}
+{"expect": "allow", "note": "S10 gpt show", "command": "sudo gpt -r show disk0"}
+{"expect": "deny", "note": "S10 asr restore", "command": "sudo asr restore --source a.dmg --target /Volumes/X --erase --noprompt"}
+{"expect": "allow", "note": "S10 asr imagescan", "command": "asr imagescan --source a.dmg"}
+{"expect": "deny", "note": "S10 tmutil deletelocalsnapshots", "command": "tmutil deletelocalsnapshots /"}
+{"expect": "deny", "note": "S10 tmutil delete", "command": "sudo tmutil delete -d /Volumes/TM -t 2023-01-01-000000"}
+{"expect": "deny", "note": "S10 tmutil thinlocalsnapshots", "command": "tmutil thinlocalsnapshots / 10000000000 4"}
+{"expect": "allow", "note": "S10 tmutil read-only", "command": "tmutil listbackups; tmutil status; tmutil listlocalsnapshots /"}
+{"expect": "deny", "note": "S10 osascript empty trash", "command": "osascript -e 'tell application \"Finder\" to empty trash'", "reason_contains": "Trash"}
+{"expect": "deny", "note": "S10 osascript empty the trash via heredoc", "command": "osascript <<'EOF'\ntell application \"Finder\"\n  empty the trash\nend tell\nEOF"}
+{"expect": "deny", "note": "S10 osascript do shell script", "command": "osascript -e 'do shell script \"rm -rf ~\"'"}
+{"expect": "allow", "note": "S10 osascript harmless", "command": "osascript -e 'display notification \"done\" with title \"Build\"'"}
+{"expect": "deny", "note": "S10 trash -e empties the Trash", "command": "trash -e"}
+{"expect": "allow", "note": "S10 trash moves items to the Trash", "command": "trash -v ~/Documents/old-draft && /usr/bin/trash ~/Downloads/installer.dmg"}
+{"expect": "deny", "note": "S11 heredoc into bash", "command": "bash <<EOF\nrm -rf ~\nEOF"}
+{"expect": "deny", "note": "S11 quoted heredoc into sh is still run", "command": "sh <<'EOF'\ncd ~\nrm -rf *\nEOF"}
+{"expect": "deny", "note": "S11 unquoted heredoc substitution runs", "command": "cat <<EOF\n$(rm -rf ~)\nEOF"}
+{"expect": "allow", "note": "S11 quoted heredoc body is data", "command": "cat <<'EOF'\n$(rm -rf ~)\nEOF"}
+{"expect": "allow", "note": "S11 commit message is data", "command": "git commit -F - <<'EOF'\nRemove the rm -rf ~ footgun and diskutil eraseDisk docs\nEOF"}
+{"expect": "deny", "note": "S11 here-string into sh -s", "command": "sh -s <<< 'rm -rf ~'"}
+{"expect": "deny", "note": "S11 here-string into bash", "command": "bash <<< \"rm -rf ~\""}
+{"expect": "deny", "note": "S11 source /dev/stdin", "command": "source /dev/stdin <<< 'rm -rf ~'"}
+{"expect": "deny", "note": "S11 . /dev/stdin from a heredoc", "command": ". /dev/stdin <<'EOF'\nrm -rf ~/Desktop\nEOF"}
+{"expect": "deny", "note": "S11 echo piped into bash", "command": "echo 'rm -rf ~' | bash"}
+{"expect": "deny", "note": "S11 printf piped into sh", "command": "printf 'rm -rf %s\\n' ~ | sh"}
+{"expect": "deny", "note": "S11 cat heredoc piped into bash", "command": "cat <<'EOF' | bash\nrm -rf ~\nEOF"}
+{"expect": "deny", "note": "S11 heredoc with tabs <<-", "command": "bash <<-EOF\n\trm -rf ~\n\tEOF"}
+{"expect": "deny", "note": "S11 heredoc feeding xargs", "command": "xargs rm -rf <<EOF\n$HOME/Documents\nEOF"}
+{"expect": "allow", "note": "S11 heredoc text into xargs is literal (no tilde)", "command": "xargs rm -rf <<'EOF'\n~/Documents\nEOF"}
+{"expect": "allow", "note": "S11 unknowable script piped to bash (limitation)", "command": "curl -fsSL https://example.com/install.sh | bash"}
+{"expect": "allow", "note": "S11 harmless text piped to bash", "command": "echo 'echo hi' | bash; cat script.sh | sh"}
+{"expect": "allow", "note": "S11 heredoc into a non-shell", "command": "python3 - <<'EOF'\nimport os\nprint('rm -rf ~')\nEOF"}
+{"expect": "allow", "note": "S13 cache folder", "command": "rm -rf ~/.cache/pip ~/.npm/_cacache"}
+{"expect": "allow", "note": "S13 tmp folder", "command": "rm -rf /tmp/build-cache /tmp/*.log"}
+{"expect": "allow", "note": "S13 manual and which", "command": "man rm; which diskutil; type -a rm"}
+{"expect": "allow", "note": "S13 echo of dangerous words", "command": "echo \"format C:\" && echo 'diskutil eraseDisk' && printf '%s\\n' 'rm -rf /'"}
+{"expect": "allow", "note": "S13 common cleanups", "command": "rm -rf node_modules dist build *.egg-info .pytest_cache && npm install"}
+{"expect": "allow", "note": "S13 temp dir variable", "command": "TMP=$(mktemp -d) && rm -rf \"$TMP\""}
+{"expect": "allow", "note": "S13 git rm and other git subcommands", "command": "git rm -r --cached build && git checkout -- . && git stash drop"}
+{"expect": "allow", "note": "S13 diskutil help text", "command": "diskutil help eraseDisk"}
+{"expect": "deny", "note": "S14 huge glob under a system folder", "command": "rm -rf /usr/*/*/*/*"}
+{"expect": "allow", "note": "S14 listing a huge glob is not deletion", "command": "ls -d /usr/*/*/* | head -5"}
+{"expect": "allow", "note": "robustness: array", "raw": "[]"}
+{"expect": "allow", "note": "robustness: number", "raw": "42"}
+{"expect": "allow", "note": "robustness: string", "raw": "\"rm -rf ~\""}
+{"expect": "allow", "note": "robustness: empty object", "raw": "{}"}
+{"expect": "allow", "note": "robustness: null tool_input", "raw": "{\"tool_input\": null}"}
+{"expect": "allow", "note": "robustness: non-string command", "raw": "{\"tool_input\": {\"command\": 5}}"}
+{"expect": "allow", "note": "robustness: list command", "raw": "{\"tool_input\": {\"command\": [\"rm\", \"-rf\", \"~\"]}}"}
+{"expect": "allow", "note": "robustness: string tool_input", "raw": "{\"tool_input\": \"rm -rf ~\"}"}
+{"expect": "allow", "note": "robustness: invalid JSON", "raw": "{not json at all"}
+{"expect": "allow", "note": "robustness: empty input", "raw": ""}
+{"expect": "deny", "note": "robustness: no cwd field", "raw": "{\"tool_name\": \"Bash\", \"tool_input\": {\"command\": \"rm -rf ~\"}}"}
+{"expect": "deny", "note": "robustness: non-string cwd", "raw": "{\"cwd\": 5, \"tool_input\": {\"command\": \"rm -rf ~/Documents\"}}"}
+{"expect": "allow", "note": "robustness: non-string cwd, harmless", "raw": "{\"cwd\": [1], \"tool_input\": {\"command\": \"rm -rf ./build-xyz\"}}"}
+{"expect": "deny", "note": "robustness: other tool name with a command", "raw": "{\"tool_name\": \"PowerShell\", \"tool_input\": {\"command\": \"rm -rf ~\"}}"}
+{"expect": "allow", "note": "robustness: unicode file names", "command": "rm -rf ./bü𝒾ld-🔥 ~/Documents/Project/ünïcødé"}
+{"expect": "deny", "note": "robustness: unicode around a protected path", "command": "echo 🔥 && rm -rf ~/Desktop"}
+{"expect": "allow", "note": "robustness: lone surrogate", "raw": "{\"tool_input\": {\"command\": \"rm -rf ./\\ud800x\"}}"}
+{"expect": "deny", "note": "robustness: lone surrogate then .. to home", "raw": "{\"tool_input\": {\"command\": \"rm -rf ~/\\ud800/..\"}}"}
+{"expect": "deny", "note": "robustness: NUL inside the command", "raw": "{\"tool_input\": {\"command\": \"rm -rf ~\\u0000/Documents/Project/x\"}}"}
+{"expect": "deny", "note": "robustness: NUL then a second command", "raw": "{\"tool_input\": {\"command\": \"echo hi\\u0000; rm -rf ~\"}}"}
+{"expect": "allow", "note": "robustness: NUL in a harmless command", "raw": "{\"tool_input\": {\"command\": \"echo a\\u0000b\"}}"}
+{"expect": "allow", "note": "robustness: control characters", "command": "printf 'a\\tb\\r\\n' | cat -v\r"}
+{"expect": "deny", "note": "canary with surrounding whitespace", "command": "  echo PRETOOLUSE_HOOK_CANARY\n", "reason_contains": "PreToolUse hook is installed and working"}
+{"expect": "allow", "note": "canary text inside a longer command is not the canary", "command": "echo PRETOOLUSE_HOOK_CANARY_X"}
+{"expect": "allow", "note": "S13 dirname of $0", "command": "rm -rf \"$(dirname \"$0\")/build\""}
+{"expect": "allow", "note": "S13 cache contents", "command": "rm -rf ${HOME}/.cache/* ~/Library/Caches/*"}
+{"expect": "allow", "note": "S13 find in /tmp with -delete", "command": "find /tmp -name '*.log' -mtime +7 -delete"}
+{"expect": "allow", "note": "S13 cd chain inside the project", "command": "cd ~/Documents/Project && cd build && rm -rf *"}
+{"expect": "allow", "note": "S13 git workflow", "command": "git stash && git clean -fd && git stash pop"}
+{"expect": "allow", "note": "S13 docker --rm is not rm", "command": "docker run --rm -v \"$PWD\":/app node:20 rm -rf /app/node_modules"}
+{"expect": "allow", "note": "S13 remote command is not local", "command": "ssh host 'rm -rf ~/tmp/cache'"}
+{"expect": "allow", "note": "S13 project .git", "command": "rm -rf .git .venv"}
+{"expect": "allow", "note": "S13 subfolders of protected system folders", "command": "sudo rm -rf /usr/local/lib/node_modules/foo /opt/homebrew/Cellar/foo/1.0"}
+{"expect": "allow", "note": "S13 loops and tests", "command": "for i in {1..10}; do echo $i; done; [ -d build ] && rm -rf build; test -d x || mkdir x"}
+{"expect": "allow", "note": "S13 heredoc into a project file", "command": "cat <<EOF > config.json\n{\"home\": \"$HOME\"}\nEOF"}
+{"expect": "deny", "note": "S6 heredoc truncating agent settings", "command": "cat > ~/.claude/settings.json <<'EOF'\n{}\nEOF"}
+{"expect": "allow", "note": "S13 default TMPDIR fallback", "command": "rm -rf \"${TMPDIR:-/tmp}/build-cache\" \"$HOME/.cache/pip\""}
+{"expect": "allow", "note": "S13 eval of tool output", "command": "eval \"$(ssh-agent -s)\" && eval \"$(/opt/homebrew/bin/brew shellenv)\""}
+{"expect": "allow", "note": "S13 source and export", "command": "source ~/.zshrc && export PATH=\"$HOME/bin:$PATH\" && rm -rf build"}
+{"expect": "allow", "note": "S13 project folder with trailing slash", "command": "rm -rf ~/Documents/Project/ ~/Documents/Project/../Project-old"}
+{"expect": "allow", "note": "S13 move to the Trash", "command": "mv ~/Documents/old ~/.Trash/"}
+{"expect": "allow", "note": "S13 kill by port", "command": "kill -9 $(lsof -t -i:3000) 2>/dev/null || true"}
+{"expect": "allow", "note": "S13 read loop from a file", "command": "while read -r line; do echo \"$line\"; done < file.txt"}
+{"expect": "allow", "note": "S13 xargs echo", "command": "printf '%s\\n' a b | xargs -I{} echo {}"}
+{"expect": "allow", "note": "S13 rm of project glob", "command": "rm -rf ./* .[!.]* 2>/dev/null"}
+{"expect": "allow", "note": "S13 npm and make", "command": "npm run clean -- --force && make clean && cargo clean"}
+{"expect": "allow", "note": "S13 python inline is not analyzed", "command": "python3 -c \"import shutil; shutil.rmtree('build', ignore_errors=True)\""}
+{"expect": "allow", "note": "S13 git rm -rf in project", "command": "git rm -rf --cached node_modules"}
+{"expect": "allow", "note": "S13 Downloads files", "command": "rm -f ~/Downloads/*.zip ~/Downloads/*.dmg ~/Downloads/installer.dmg"}
+{"expect": "deny", "note": "S9 find on Downloads (filters do not make a protected start safe)", "command": "find ~/Downloads -name '*.dmg' -mtime +30 -delete"}
+{"expect": "deny", "note": "S8 cd to a temp dir from an unknown command then glob", "command": "cd \"$(mktemp -d)\" && rm -rf *"}
+{"expect": "allow", "note": "S8 cd to a temp dir from an unknown command then subfolder", "command": "cd \"$(mktemp -d)\" && rm -rf work"}
+{"expect": "deny", "note": "S3 HOME reassigned then cd", "command": "HOME=/tmp/x; cd ~ && rm -rf /Users/*"}
+{"expect": "deny", "note": "S3 named variable assigned from another", "command": "A=~; B=$A/Documents; rm -rf \"$B\""}
+{"expect": "deny", "note": "S3 append assignment", "command": "D=~; D+=/Desktop; rm -rf \"$D\""}
+{"expect": "deny", "note": "S3 printf -v", "command": "printf -v D '%s/Documents' ~; rm -rf \"$D\""}
+{"expect": "deny", "note": "S3 read from a here-string", "command": "read -r D <<< ~/Documents; rm -rf \"$D\""}
+{"expect": "deny", "note": "S3 realpath of home", "command": "rm -rf \"$(realpath ~)\""}
+{"expect": "deny", "note": "S3 variable in an if branch", "command": "if [ -n \"$CI\" ]; then D=./build; else D=~; fi; rm -rf \"$D\""}
+{"expect": "deny", "note": "S3 case branch sets cwd", "command": "case \"$1\" in home) cd ~;; *) cd /tmp;; esac; rm -rf *"}
+{"expect": "deny", "note": "S8 while loop body cd", "command": "while [ \"$PWD\" != / ]; do cd ..; done; rm -rf *"}
+{"expect": "deny", "note": "S9 rmdir-like unlink of settings", "command": "unlink ~/.claude/settings.json"}
+{"expect": "deny", "note": "S9 srm", "command": "srm -rf ~/Documents"}
+{"expect": "deny", "note": "S9 rm -P (BSD overwrite)", "command": "rm -P -rf ~/Pictures"}
+{"expect": "deny", "note": "S5 tilde with trailing dot", "command": "rm -rf ~/."}
+{"expect": "deny", "note": "S5 other user's home", "command": "sudo rm -rf /Users/Shared"}
+{"expect": "deny", "note": "S5 a mounted volume's contents", "command": "rm -rf /Volumes/Backup/*"}
+{"expect": "deny", "note": "S5 unknown user name under /Users", "command": "sudo rm -rf \"/Users/${NAME:?}\""}
+{"expect": "deny", "note": "S5 glob over user homes", "command": "sudo rm -rf /Users/*/Documents"}
+{"expect": "allow", "note": "S5 deep glob inside a user's project", "command": "rm -rf ~/Documents/Project/*/node_modules"}
+{"expect": "deny", "note": "S7 sudo -i with a command", "command": "sudo -i -u root rm -rf /"}
+{"expect": "deny", "note": "S7 nested wrappers", "command": "sudo nice -n 5 timeout 10 env FOO=1 nohup rm -rf ~"}
+{"expect": "deny", "note": "S7 xargs runs bash -c", "command": "echo ~ | xargs -I{} bash -c 'rm -rf {}'"}
+{"expect": "deny", "note": "S7 parallel shell string", "command": "parallel 'rm -rf {}' ::: ~/Documents"}
+{"expect": "deny", "note": "S1 GNU parallel is not analyzed: risky use falls to S1 (was: parallel dry run allowed)", "command": "parallel --dry-run rm -rf ::: ~/Documents", "reason_contains": "Could not verify"}
+{"expect": "deny", "note": "S7 runuser -u", "command": "runuser -u root -- rm -rf /"}
+{"expect": "deny", "note": "S7 busybox applet", "command": "busybox rm -rf ~"}
+{"expect": "deny", "note": "S7 eval of a variable holding a command", "command": "CMD='rm -rf ~'; eval \"$CMD\""}
+{"expect": "deny", "note": "S7 bash -c of a variable holding a command", "command": "CMD='rm -rf ~'; bash -c \"$CMD\""}
+{"expect": "deny", "note": "S11 exported variable seen by a child shell", "command": "export T=~/Documents; bash -c 'rm -rf \"$T\"'"}
+{"expect": "deny", "note": "S11 non-exported variable is empty in a child shell", "command": "T=/tmp/x; bash -c 'rm -rf \"$T\"/*'"}
+{"expect": "allow", "note": "S11 exported safe variable in a child shell", "command": "export T=/tmp/x; bash -c 'rm -rf \"$T\"/*'"}
+{"expect": "deny", "note": "S9 dd of= with conv=notrunc to a disk", "command": "dd if=boot.img of=/dev/disk3 conv=notrunc"}
+{"expect": "deny", "note": "S9 redirect to a disk through a variable", "command": "D=/dev/rdisk4; cat image.iso > \"$D\""}
+{"expect": "allow", "note": "S10 diskutil verbs that only read or mount", "command": "diskutil mount disk3s1; diskutil verifyVolume /; diskutil eject disk4"}
+{"expect": "deny", "note": "S10 diskutil verb via sudo with full path", "command": "sudo /usr/sbin/diskutil partitionDisk disk4 GPT APFS X 100%"}
+{"expect": "deny", "note": "S10 diskutil with an unknown action", "command": "diskutil \"$ACTION\" disk4"}
+{"expect": "deny", "note": "S13 legacy prefix forms are still blocked structurally", "command": "rm -rf /*"}
+{"expect": "deny", "note": "S13 legacy prefix forms are still blocked structurally", "command": "rm -rf $HOME"}
+{"expect": "deny", "note": "S13 legacy prefix forms are still blocked structurally", "command": "rm -rf /System"}
+{"expect": "deny", "note": "S13 a cache path that climbs out to a protected folder", "command": "rm -rf ~/.cache/../Documents"}
+{"expect": "deny", "note": "S11 sudo bash fed by a heredoc", "command": "sudo bash <<'EOF'\nrm -rf /\nEOF"}
+{"expect": "deny", "note": "S7 nohup bash -c in the background", "command": "nohup bash -c 'rm -rf ~' >/dev/null 2>&1 &"}
+{"expect": "deny", "note": "S9 exec redirection to a disk", "command": "exec > /dev/disk2"}
+{"expect": "deny", "note": "S9 truncating redirection to a disk", "command": ": > /dev/rdisk0"}
+{"expect": "allow", "note": "S9 exec redirection to a log file", "command": "exec > build.log 2>&1"}
+{"expect": "deny", "note": "S11 here-string feeding bash through sudo", "command": "sudo -u root bash -s <<< 'cd ~ && rm -rf ./*'"}
+{"expect": "allow", "note": "S10 trash with a file named like an option after --", "command": "trash -- -e"}
+{"expect": "deny", "note": "S2 substitution inside nested arithmetic", "command": "echo $(( 1 + $(( $(rm -rf ~) )) ))"}
+{"expect": "deny", "note": "S2 substitution inside a for (( )) header", "command": "for (( i = $(rm -rf ~); i < 1; i++ )); do :; done"}
+{"expect": "allow", "note": "S7 empty script name for sh", "command": "sh '' && bash \"\""}
+{"expect": "deny", "prefix": "rm -rf ./build", "command": " ./x", "repeat": 62500, "reason_contains": "Could not verify", "note": "S1 large (~250 KB) RISKY command is not analyzed: fail closed"}
+{"expect": "allow", "prefix": "echo", "command": " a", "repeat": 125000, "note": "S1 large (~250 KB) harmless command"}
+{"expect": "deny", "prefix": "rm -rf", "command": " ./x", "repeat": 2000, "suffix": " ~", "note": "S14 a long command with a protected operand at the end"}
+{"expect": "allow", "prefix": "echo", "command": " word", "repeat": 10000, "note": "S14 ~50 KB harmless command with many words is analyzed in time"}
+{"expect": "deny", "prefix": "echo ", "command": "$(", "repeat": 200, "suffix": "rm -rf ./build))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))", "reason_contains": "Could not verify", "note": "S1 deeply nested substitutions + risky"}
+{"expect": "allow", "prefix": "echo ", "command": "$(", "repeat": 200, "suffix": "echo hi))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))", "note": "S1 deeply nested substitutions, not risky"}
+{"expect": "allow", "raw": "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]", "note": "robustness: deeply nested JSON payload"}
+{"expect": "deny", "prefix": "rm -rf ./x", "command": "{", "repeat": 2000, "suffix": "}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}", "note": "S14 many nested braces stay within the budget + risky"}
+{"expect": "allow", "prefix": "echo ./x", "command": "{", "repeat": 2000, "suffix": "}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}", "note": "S14 many nested braces, not risky"}
+{"expect": "deny", "note": "S14 deep glob from the root is bounded by the budget", "command": "rm -rf /*/*/*/*/*/*/*/*/*/nonexistent-xyz"}
+{"expect": "allow", "note": "S14 deep glob from the root in a redirect target", "command": "echo hi > /*/*/*/*/*/*/*/*/nonexistent-xyz"}
+{"expect": "deny", "note": "S14 many ** components", "command": "rm -rf /**/**/**/**/**/**/**/**/**/**/**/**/**/**/**/**/**/**/**/**/**/**/**/**/**/**/**/**/**/x"}
+{"expect": "deny", "note": "S14 alternating ** components", "command": "rm -rf /**/a/**/a/**/a/**/a/**/a/**/a/**/a/**/a/**/a/**/a/**/a/**/a/**/a"}
+{"expect": "allow", "note": "S14 deep project glob", "command": "rm -rf ./*/*/*/*/*/*/*/*/node_modules"}
+{"expect": "deny", "note": "S9 redirect to a disk device through a glob", "command": "cat img > /dev/disk9*"}
+{"expect": "deny", "note": "S9 redirect to a disk device through a wildcard folder", "command": "cat img > /d?v/disk0"}
+{"expect": "allow", "command": "f() { echo hi; }; f", "note": "S1 shell function, not risky: allowed"}
+{"expect": "allow", "command": "f() { ls; }; f 2>/dev/null", "note": "S1 function + redirect to /dev/null: /dev/null is not a RISKY block-device write"}
+{"expect": "allow", "command": "parallel echo ::: a b", "note": "S1 GNU parallel, not risky: allowed"}
+{"expect": "deny", "command": "select x in a b; do rm -rf ./build; done", "reason_contains": "Could not verify", "note": "S1 select is not analyzed + risky"}
+{"expect": "allow", "command": "case $1 in a) echo a;; esac 2>/dev/null", "note": "S1 case statement, not risky"}
+{"expect": "allow", "command": "a=(1 2 3); echo \"${a[@]}\"", "note": "S1 arrays, not risky"}
+{"expect": "deny", "command": "set -- a ~; shift; rm -rf \"$1\"", "reason_contains": "Could not verify", "note": "S1 shift is not analyzed + risky"}
+{"expect": "deny", "command": "pushd +1 && rm -rf *", "reason_contains": "Could not verify", "note": "S1 pushd stack rotation is not analyzed + risky"}
+{"expect": "deny", "command": "D=~; rm -rf \"${D/x/y}\"", "reason_contains": "Could not verify", "note": "S1 ${x/a/b} substitution is not analyzed + risky"}
+{"expect": "allow", "command": "D=~; echo \"${D/x/y}\" \"${D:0:3}\" \"${D^^}\"", "note": "S1 exotic ${...} operators, not risky"}
+{"expect": "deny", "command": "osascript -e 'do shell script \"ls\"'", "reason_contains": "Could not verify", "note": "S10 osascript running shell code is not analyzed (S1)"}
+{"expect": "deny", "command": "$SUDO rm -rf ~", "note": "S3 a possibly-empty command word: the rest may run"}
+{"expect": "allow", "command": "$SUDO rm -rf ./build", "note": "S3 a possibly-empty command word, project folder"}
+{"expect": "allow", "command": "[[ -d build && -f build/x ]] && rm -rf build", "note": "S2 [[ ]] with && inside, then a project folder"}
+{"expect": "deny", "command": "env -S 'rm -rf' ~", "note": "S7 env -S split string with arguments after it"}
+{"expect": "allow", "command": "if [ -d build ]; then rm -rf build; elif [ -d dist ]; then rm -rf dist; else echo none; fi", "note": "S2 if/elif/else in the project"}
+{"expect": "deny", "command": "until cd ..; do :; done; rm -rf *", "note": "S8 until loop changes the cwd (cwd may become Documents)"}
+{"expect": "allow", "command": "for i in {1..100}; do rm -f \"file$i.tmp\"; done", "note": "S4 a loop over 100 values is checked in chunks (no S1 doubt)"}
+{"expect": "deny", "command": "for d in {1..40} ~; do rm -rf \"$d\"; done", "note": "S4 a protected value after 40 loop values is still checked"}
+{"expect": "allow", "command": "rm -rf \"$HOME/${X:?}\"", "note": "S3 a non-empty unknown name under home is opaque"}
+{"expect": "deny", "command": "sudo rm -rf \"/Users/${X:?}/Documents\"", "note": "S5 an unknown user's Documents folder (/Users/*/Documents)"}
+{"expect": "deny", "command": "rsync -a --delete host:/srv/site/ ~/", "note": "S9 rsync --delete from a remote source into home"}
+{"expect": "deny", "command": "cp -t /dev/disk4 disk.img", "note": "S9 cp -t to a disk device"}
+{"expect": "allow", "command": "printf 'a\\n' | tee -a /tmp/log.txt >/dev/null", "note": "S9 tee -a to a log file"}
+{"expect": "deny", "command": "while read -r f; do rm -rf \"$f\"; done < <(find ~ -maxdepth 1)", "note": "S9 while read fed by a process substitution listing home"}
+{"expect": "deny", "command": "D=./build; unset D; rm -rf \"$D\"/*", "note": "S3 a variable is empty again after unset (/*)"}
+{"expect": "deny", "command": "nice -n 5 find ~ -name '*.tmp' | xargs rm -f", "note": "S9 a wrapper option read both ways keeps the find listing for xargs"}
+{"expect": "deny", "command": "sudo -u root find ~ -name '*.tmp' | xargs rm -f", "note": "S7 S9 sudo -u keeps the find listing for xargs"}
+{"expect": "allow", "command": "nice -n 5 find ./build -name '*.o' | xargs rm -f", "note": "S9 a wrapped find listing inside the project"}
+{"expect": "deny", "command": "su <<'EOF'\nrm -rf ~\nEOF", "note": "S7 su without -c runs a shell that reads the heredoc"}
+{"expect": "deny", "command": "echo 'rm -rf ~' | su -", "note": "S7 su without -c reads its commands from the pipe"}
+{"expect": "deny", "command": "runuser root <<< 'rm -rf ~'", "note": "S7 runuser in its su form reads the here-string"}
+{"expect": "allow", "command": "echo 'ls -la' | su", "note": "S7 harmless commands fed to su"}
+{"expect": "deny", "command": "git clean -fdx -enode_modules", "cwd": "@HOME@", "note": "S9 git clean: the n in an attached -e value is not --dry-run"}
+{"expect": "allow", "command": "git clean -fdx -enode_modules", "note": "S9 git clean with an attached exclude in the project"}
+{"expect": "deny", "command": "pv -o ~/.claude/settings.json backup.json", "note": "S6 pv -o truncates its output file"}
+{"expect": "allow", "command": "pv -o out.bin in.bin", "note": "S9 pv -o into the project"}
+{"expect": "deny", "command": "sudo -E echo pwd ~ | xargs rm -rf", "note": "S9 a wrapper option read both ways: the last reading that lists something (echo listing home) feeds xargs"}

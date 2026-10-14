@@ -1,0 +1,49 @@
+{"expect": "deny", "note": "guard: delete hook", "command": "rm @HOME@/.claude/hooks/destruction-blocker/Destruction_blocker.py"}
+{"expect": "deny", "note": "guard: move hook away", "command": "mv @HOME@/.claude/hooks/destruction-blocker/Destruction_blocker.py /tmp/x.py"}
+{"expect": "deny", "note": "guard: replace hook via cp", "command": "cp /tmp/other.py @HOME@/.claude/hooks/destruction-blocker/Destruction_blocker.py"}
+{"expect": "deny", "note": "guard: edit hook via sed", "command": "sed -i '' 's/deny/allow/' @HOME@/.claude/hooks/destruction-blocker/Destruction_blocker.py"}
+{"expect": "deny", "note": "guard: overwrite via redirect", "command": "echo x > @HOME@/.claude/hooks/destruction-blocker/Destruction_blocker.py"}
+{"expect": "deny", "note": "guard: new file in hook folder", "command": "touch ~/.claude/hooks/destruction-blocker/evil.py"}
+{"expect": "deny", "note": "guard: cd into folder then edit", "command": "cd ~/.claude/hooks/destruction-blocker && sed -i '' s/a/b/ *.py"}
+{"expect": "deny", "note": "guard: cd into folder, glob", "command": "cd ~/.claude/hooks && cd destr* && touch x"}
+{"expect": "deny", "note": "guard: rename folder", "command": "cd ~/.claude/hooks && mv destruction-blocker old"}
+{"expect": "deny", "note": "guard: move parent folder", "command": "cd ~/.claude && mv hooks hooks-old"}
+{"expect": "deny", "note": "guard: python deletes hook", "command": "python3 -c \"import os; os.remove(os.path.expanduser('~/.claude/hooks/destruction-blocker/Destruction_blocker.py'))\""}
+{"expect": "deny", "note": "guard: chmod hook", "command": "chmod 000 @HOME@/.claude/hooks/destruction-blocker/Destruction_blocker.py"}
+{"expect": "deny", "note": "guard: symlink over hook", "command": "ln -sf /tmp/x @HOME@/.claude/hooks/destruction-blocker/Destruction_blocker.py"}
+{"expect": "deny", "note": "guard: perl edits hook", "command": "perl -pi -e s/deny/allow/ ~/.claude/hooks/destruction-blocker/Destruction_blocker.py"}
+{"expect": "deny", "note": "guard: open hook in editor app", "command": "open -e @HOME@/.claude/hooks/destruction-blocker/Destruction_blocker.py"}
+{"expect": "deny", "note": "guard: move settings", "command": "mv ~/.claude/settings.json ~/.claude/settings.bak"}
+{"expect": "deny", "note": "guard: sed settings", "command": "sed -i '' '/destruction/d' ~/.claude/settings.json"}
+{"expect": "deny", "note": "guard: python rewrites settings", "command": "python3 -c \"open(__import__('os').path.expanduser('~/.claude/settings.json'),'w').write('{}')\""}
+{"expect": "deny", "note": "guard: disableAllHooks via shell", "command": "echo '{\"disableAllHooks\": true}' > .claude/settings.local.json"}
+{"expect": "deny", "note": "guard: jq rewrite settings", "command": "jq 'del(.hooks)' ~/.claude/settings.json > /tmp/s && mv /tmp/s ~/.claude/settings.json"}
+{"expect": "deny", "note": "guard: move codex hooks.json", "command": "mv ~/.codex/hooks.json /tmp/"}
+{"expect": "allow", "note": "guard: read hook", "command": "cat @HOME@/.claude/hooks/destruction-blocker/Destruction_blocker.py"}
+{"expect": "allow", "note": "guard: list hook folder", "command": "ls -la ~/.claude/hooks/destruction-blocker"}
+{"expect": "allow", "note": "guard: grep hook", "command": "grep -n deny @HOME@/.claude/hooks/destruction-blocker/Destruction_blocker.py"}
+{"expect": "allow", "note": "guard: run hook (canary check)", "command": "echo '{}' | python3 ~/.claude/hooks/destruction-blocker/Destruction_blocker.py"}
+{"expect": "allow", "note": "guard: read settings", "command": "cat ~/.claude/settings.json"}
+{"expect": "allow", "note": "guard: jq read settings", "command": "jq .hooks ~/.claude/settings.json"}
+{"expect": "allow", "note": "guard: new skill folder", "command": "mkdir -p ~/.claude/skills/new-skill"}
+{"expect": "allow", "note": "guard: other hook in shared hooks dir", "command": "rm ~/.claude/hooks/other-hook.sh"}
+{"expect": "allow", "note": "guard: normal git", "command": "git status && git diff"}
+{"expect": "allow", "note": "guard: desktop photo", "command": "rm ~/Desktop/photo.jpg"}
+{"expect": "allow", "note": "guard: project build", "command": "cd build && rm -rf * && make"}
+{"expect": "allow", "note": "guard: backup settings by reading", "command": "cat ~/.claude/settings.json > /tmp/settings-backup.json"}
+{"expect": "allow", "note": "guard: similar file name", "command": "rm ~/.claude/settings.json.bak"}
+{"expect": "allow", "note": "guard: copy hook out (reading)", "command": "cat @HOME@/.claude/hooks/destruction-blocker/Destruction_blocker.py > /tmp/hook-copy.py"}
+{"expect": "deny", "note": "guard tool: Edit hook", "raw": "{\"tool_name\": \"Edit\", \"cwd\": \"@HOME@/Documents/Project\", \"tool_input\": {\"file_path\": \"@HOME@/.claude/hooks/destruction-blocker/Destruction_blocker.py\", \"old_string\": \"deny\", \"new_string\": \"allow\"}}"}
+{"expect": "deny", "note": "guard tool: Write new file in hook folder", "raw": "{\"tool_name\": \"Write\", \"cwd\": \"@HOME@/Documents/Project\", \"tool_input\": {\"file_path\": \"@HOME@/.claude/hooks/destruction-blocker/x.py\", \"content\": \"x\"}}"}
+{"expect": "deny", "note": "guard tool: MultiEdit hook", "raw": "{\"tool_name\": \"MultiEdit\", \"cwd\": \"@HOME@/Documents/Project\", \"tool_input\": {\"file_path\": \"@HOME@/.claude/hooks/destruction-blocker/Destruction_blocker.py\", \"edits\": [{\"old_string\": \"a\", \"new_string\": \"b\"}]}}"}
+{"expect": "deny", "note": "guard tool: Edit removes registration", "raw": "{\"tool_name\": \"Edit\", \"cwd\": \"@HOME@/Documents/Project\", \"tool_input\": {\"file_path\": \"@HOME@/.claude/settings.json\", \"old_string\": \"\\\"command\\\": \\\"python3 ~/.claude/hooks/destruction-blocker/Destruction_blocker.py\\\"\", \"new_string\": \"\\\"command\\\": \\\"true\\\"\"}}"}
+{"expect": "deny", "note": "guard tool: Write settings without hook", "raw": "{\"tool_name\": \"Write\", \"cwd\": \"@HOME@/Documents/Project\", \"tool_input\": {\"file_path\": \"@HOME@/.claude/settings.json\", \"content\": \"{}\"}}"}
+{"expect": "deny", "note": "guard tool: project disableAllHooks", "raw": "{\"tool_name\": \"Write\", \"cwd\": \"@HOME@/Documents/Project\", \"tool_input\": {\"file_path\": \"@HOME@/Documents/Project/.claude/settings.local.json\", \"content\": \"{\\\"disableAllHooks\\\": true}\"}}"}
+{"expect": "deny", "note": "guard tool: Edit adds disableAllHooks", "raw": "{\"tool_name\": \"Edit\", \"cwd\": \"@HOME@/Documents/Project\", \"tool_input\": {\"file_path\": \"@HOME@/.claude/settings.json\", \"old_string\": \"{\", \"new_string\": \"{\\\"disableAllHooks\\\": true,\"}}"}
+{"expect": "allow", "note": "guard tool: Edit adds a permission", "raw": "{\"tool_name\": \"Edit\", \"cwd\": \"@HOME@/Documents/Project\", \"tool_input\": {\"file_path\": \"@HOME@/.claude/settings.json\", \"old_string\": \"\\\"hooks\\\": {\", \"new_string\": \"\\\"permissions\\\": {\\\"allow\\\": [\\\"Bash(ls)\\\"]}, \\\"hooks\\\": {\"}}"}
+{"expect": "allow", "note": "guard tool: Write settings keeping hook", "raw": "{\"tool_name\": \"Write\", \"cwd\": \"@HOME@/Documents/Project\", \"tool_input\": {\"file_path\": \"@HOME@/.claude/settings.json\", \"content\": \"{\\\"model\\\": \\\"x\\\", \\\"hooks\\\": {\\\"PreToolUse\\\": [{\\\"matcher\\\": \\\"Bash|Edit|Write|MultiEdit|NotebookEdit\\\", \\\"hooks\\\": [{\\\"type\\\": \\\"command\\\",\\n\\\"command\\\": \\\"python3 ~/.claude/hooks/destruction-blocker/Destruction_blocker.py\\\"}]}]}}\"}}"}
+{"expect": "deny", "note": "guard tool: Write narrows the hook's matcher", "raw": "{\"tool_name\": \"Write\", \"cwd\": \"@HOME@/Documents/Project\", \"tool_input\": {\"file_path\": \"@HOME@/.claude/settings.json\", \"content\": \"{\\\"hooks\\\": {\\\"PreToolUse\\\": [{\\\"matcher\\\": \\\"Bash\\\", \\\"hooks\\\": [{\\\"type\\\": \\\"command\\\", \\\"command\\\": \\\"python3 ~/.claude/hooks/destruction-blocker/Destruction_blocker.py\\\"}]}]}}\"}}"}
+{"expect": "deny", "note": "guard tool: Edit narrows the matcher", "raw": "{\"tool_name\": \"Edit\", \"cwd\": \"@HOME@/Documents/Project\", \"tool_input\": {\"file_path\": \"@HOME@/.claude/settings.json\", \"old_string\": \"\\\"matcher\\\": \\\"Bash|Edit|Write|MultiEdit|NotebookEdit\\\"\", \"new_string\": \"\\\"matcher\\\": \\\"Read\\\"\"}}"}
+{"expect": "allow", "note": "guard tool: Read hook", "raw": "{\"tool_name\": \"Read\", \"cwd\": \"@HOME@/Documents/Project\", \"tool_input\": {\"file_path\": \"@HOME@/.claude/hooks/destruction-blocker/Destruction_blocker.py\"}}"}
+{"expect": "allow", "note": "guard tool: Edit project file", "raw": "{\"tool_name\": \"Edit\", \"cwd\": \"@HOME@/Documents/Project\", \"tool_input\": {\"file_path\": \"@HOME@/Documents/Project/src/main.c\", \"old_string\": \"a\", \"new_string\": \"b\"}}"}
+{"expect": "allow", "note": "guard tool: Write new project file", "raw": "{\"tool_name\": \"Write\", \"cwd\": \"@HOME@/Documents/Project\", \"tool_input\": {\"file_path\": \"@HOME@/Documents/Project/notes.md\", \"content\": \"hi\"}}"}
