@@ -7,12 +7,13 @@ A collection of hooks, skills and small tools for AI coding agents such as Claud
 | Tool | What it does | Platforms |
 |---|---|---|
 | [PreToolUse Safety Hooks](PreToolUse%20Safety%20Hooks/) | Blocks agent commands that would wipe a disk, the operating system, personal folders, backups or the Trash, before they run, and protects itself from being changed by the agent. | macOS, Linux, Windows |
+| [Facebook Marketplace Poster](facebook-marketplace-poster/) | Coaches the user through source-file validation and creates or publishes prepared Facebook Marketplace listings. | macOS, Windows |
 
 ## Installing a tool
 
-Open the tool's folder and follow its `INSTALL.md`, or point your agent at it, for example:
+Open the tool's folder and follow its `SKILL.md`, or point your agent at it, for example:
 
-> Install the tool in `PreToolUse Safety Hooks/` by following its INSTALL.md.
+> Use `facebook-marketplace-poster/SKILL.md` to create or publish one prepared Facebook Marketplace listing.
 
 ## License
 
