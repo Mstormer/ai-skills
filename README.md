@@ -1,19 +1,13 @@
 # AI Tools and Skills
 
-A collection of hooks, skills and small tools for AI coding agents such as Claude Code and Codex. Each tool lives in its own folder with its own install guide, written so that an agent can install it by itself.
+Hooks, skills, and small tools for AI coding agents such as Claude Code and Codex.
 
-## Tools
-
-| Tool | What it does | Platforms |
+| Tool | What it does | Documentation |
 |---|---|---|
-| [PreToolUse Safety Hooks](PreToolUse%20Safety%20Hooks/) | Blocks agent commands that would wipe a disk, the operating system, personal folders, backups or the Trash, before they run, and protects itself from being changed by the agent. | macOS, Linux, Windows |
-| [Facebook Marketplace Poster](facebook-marketplace-poster/) | Coaches the user through source-file validation and creates or publishes prepared Facebook Marketplace listings. | macOS, Windows |
+| [PreToolUse Safety Hooks](PreToolUse%20Safety%20Hooks/) | Helps block destructive commands and protects the hook's own configuration. | [README](PreToolUse%20Safety%20Hooks/README.md) · [Install](PreToolUse%20Safety%20Hooks/INSTALL.md) |
+| [Facebook Marketplace Poster](facebook-marketplace-poster/) | Helps prepare and publish a listing from a folder of listing details and photos. | [README](facebook-marketplace-poster/README.md) · [Install](facebook-marketplace-poster/INSTALL.md) |
 
-## Installing a tool
-
-Open the tool's folder and follow its `SKILL.md`, or point your agent at it, for example:
-
-> Use `facebook-marketplace-poster/SKILL.md` to create or publish one prepared Facebook Marketplace listing.
+Each tool's folder contains its own README and installation guide.
 
 ## License
 
