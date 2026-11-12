@@ -1,11 +1,11 @@
-# AI Tools and Skills
+# AI Skills
 
 Hooks, skills, and small tools for AI coding agents such as Claude Code and Codex.
 
 | Tool | What it does | Documentation |
 |---|---|---|
 | [PreToolUse Safety Hooks](PreToolUse%20Safety%20Hooks/) | Helps block destructive commands and protects the hook's own configuration. | [README](PreToolUse%20Safety%20Hooks/README.md) · [Install](PreToolUse%20Safety%20Hooks/INSTALL.md) |
-| [Facebook Marketplace Poster](facebook-marketplace-poster/) | Helps prepare and publish a listing from a folder of listing details and photos. | [README](facebook-marketplace-poster/README.md) · [Install](facebook-marketplace-poster/INSTALL.md) |
+| [Facebook Marketplace Poster](facebook-marketplace-posting/) | Identifies items from photos, researches prices, finds local groups and posts Marketplace listings after your approval. | [README](facebook-marketplace-posting/README.md) · [Install](facebook-marketplace-posting/INSTALL.md) |
 
 Each tool's folder contains its own README and installation guide.
 

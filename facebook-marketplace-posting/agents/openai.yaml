@@ -1,0 +1,4 @@
+interface:
+  display_name: "Facebook Marketplace Poster"
+  short_description: "Identify, price and post items to Facebook Marketplace from a folder of photos"
+  default_prompt: "Use $facebook-marketplace-posting to identify, price and post the items in my Marketplace folder."

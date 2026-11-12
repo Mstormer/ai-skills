@@ -1,4 +1,0 @@
-interface:
-  display_name: "Facebook Marketplace Poster"
-  short_description: "Create and publish prepared Marketplace listings"
-  default_prompt: "Use $facebook-marketplace-poster to prepare or publish one prepared Facebook Marketplace listing."
