@@ -6,7 +6,10 @@ Hooks, skills, and small tools for AI coding agents such as Claude Code and Code
 |---|---|---|
 | [PreToolUse Safety Hooks](PreToolUse%20Safety%20Hooks/) | Helps block destructive commands and protects the hook's own configuration. | [README](PreToolUse%20Safety%20Hooks/README.md) · [Install](PreToolUse%20Safety%20Hooks/INSTALL.md) |
 | [Facebook Marketplace Poster](facebook-marketplace-posting/) | Identifies items from photos, researches prices, finds local groups and posts Marketplace listings after your approval. | [README](facebook-marketplace-posting/README.md) · [Install](facebook-marketplace-posting/INSTALL.md) |
+| [StudyDeeper Bible Study Coach](studydeeper-bible-study-coach/) | Coaches you through a simple five-step (SKORA) Bible study of a passage, one step at a time. | [README](studydeeper-bible-study-coach/README.md) |
 | [StudyDeeper Advanced Bible Study Coach](advanced-studydeeper-bible-study-coach/) | Coaches you through a nine-step Bible study of a passage, one step at a time. | [README](advanced-studydeeper-bible-study-coach/README.md) |
+| [Bible Framework Explorer](bible-framework-explorer/) | Guides you through a fourteen-category framework to find the affirmations and presuppositions within a Bible passage. | [README](bible-framework-explorer/README.md) |
+| [Expository Sermon Coach](expository-sermon-coach/) | Coaches you through preparing a text-faithful expository sermon, from the Big Idea to illustrations, without writing it for you. | [README](expository-sermon-coach/README.md) |
 | [Presentation Crafter](presentation-crafter/) | Turns a manuscript or outline into slide-by-slide content for PowerPoint or Keynote. | [README](presentation-crafter/README.md) |
 | [Biblical Hebrew & Greek Mnemonic Creator](biblical-hebrew-greek-mnemonic-creator/) | Gives seven sound-alike English mnemonics, with storyboard scenes, for Biblical Hebrew and Greek words. | [README](biblical-hebrew-greek-mnemonic-creator/README.md) |
 | [The Negotiator](the-negotiator/) | Coaches you through a negotiation and drafts your reply using Chris Voss's Black Swan methodology. | [README](the-negotiator/README.md) |
